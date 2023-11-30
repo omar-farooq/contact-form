@@ -1,9 +1,7 @@
 package main
 
 import (
-    b64 "encoding/base64"
     "context"
-    "encoding/json"
     "fmt"
     "github.com/aws/aws-lambda-go/events"
     "github.com/aws/aws-lambda-go/lambda"
@@ -25,13 +23,7 @@ const (
     CharSet = "UTF-8"
 )
 
-func handler(ctx context.Context, event events.LambdaFunctionURLRequest) (events.LambdaFunctionURLResponse, error) {
-
-    body := []byte(event.Body)
-    bodyDecoded, _ := b64.StdEncoding.DecodeString(string(body))
-    var form ContactForm
-    json.Unmarshal(bodyDecoded, &form)
-
+func handler(ctx context.Context, form *ContactForm) (events.APIGatewayProxyResponse, error) {
     sess, err := session.NewSession(&aws.Config{
         Region:aws.String("eu-west-2")},
     )
@@ -90,7 +82,7 @@ func handler(ctx context.Context, event events.LambdaFunctionURLRequest) (events
             // Message from an error.
             fmt.Println(err.Error())
         }
-        return events.LambdaFunctionURLResponse{
+        return events.APIGatewayProxyResponse{
             StatusCode: 400,
             Body:       "There was an issue with the request",
         }, err
@@ -98,7 +90,7 @@ func handler(ctx context.Context, event events.LambdaFunctionURLRequest) (events
 
     fmt.Println(result)
 
-    response := events.LambdaFunctionURLResponse{
+    response := events.APIGatewayProxyResponse{
         StatusCode: 200,
         Body:       "Sent",
     }
